@@ -1,57 +1,44 @@
+import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Pagination } from "swiper/modules";
 import Image from "next/image";
-
+import { groq } from "next-sanity";
+import { client } from "@/utils/sanity/sanity.client";
 type Product = {
-  id: number;
+  _id: string;
   name: string;
   code: string;
   price: string;
-  image: string;
+  image: {
+    asset: {
+      url: string;
+    };
+  };
 };
 
-const products: Product[] = [
-  {
-    id: 1,
-    name: "Cantilever chair",
-    code: "Y523201",
-    price: "$42.00",
-    image: "/images/chair1.png",
-  },
-  {
-    id: 2,
-    name: "Cantilever chair",
-    code: "Y523202",
-    price: "$45.00",
-    image: "/images/chair2.png",
-  },
-  {
-    id: 3,
-    name: "Cantilever chair",
-    code: "Y523203",
-    price: "$48.00",
-    image: "/images/chair3.png",
-  },
-  {
-    id: 4,
-    name: "Cantilever chair",
-    code: "Y523204",
-    price: "$50.00",
-    image: "/images/chair4.png",
-  },
-  {
-    id: 5,
-    name: "Cantilever chair",
-    code: "Y523205",
-    price: "$55.00",
-    image: "/images/chair5.png",
-  },
-];
-
 export default function FeaturedProducts() {
+  const [products, setProducts] = useState<Product[]>([]);
+  // const products = client.fetch(query);
+  // Fetch data from Sanity
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const query = groq`*[_type == "product"]{
+    _id,
+    name,
+    code,
+    price,
+    "image": image.asset->url
+  } | order(_createdAt desc)`;
+      const productsData = await client.fetch(query);
+      setProducts(productsData);
+    };
+
+    fetchProducts();
+  }, []);
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -72,18 +59,20 @@ export default function FeaturedProducts() {
           }}
           className="w-full"
         >
-          {products.map((product) => (
-            <SwiperSlide key={product.id}>
+          {products?.map((product) => (
+            <SwiperSlide key={product._id}>
               <div className="group relative bg-gray-100 p-6 rounded-lg shadow-md hover:shadow-lg transition">
                 {/* Product Image */}
                 <div className="flex items-center justify-center mb-6">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    width={200}
-                    height={200}
-                    className="object-contain"
-                  />
+                  {product.image && (
+                    <Image
+                      src={product.image ?? ""}
+                      alt={product.name}
+                      width={200}
+                      height={200}
+                      className="object-contain"
+                    />
+                  )}
                 </div>
 
                 {/* Product Details */}

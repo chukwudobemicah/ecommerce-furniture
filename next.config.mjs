@@ -29,7 +29,11 @@ const nextConfig = {
   },
   reactStrictMode: false,
   images: {
-    domains: ["localhost", "chocolate-geographical-weasel-195.mypinata.cloud"],
+    domains: [
+      "localhost",
+      "chocolate-geographical-weasel-195.mypinata.cloud",
+      "cdn.sanity.io",
+    ],
   },
 };
 
